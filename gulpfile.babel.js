@@ -34,7 +34,7 @@ const routes = {
     }
 };
 // prepare  /* pipe  */ 
-const clean = () => del(["build"]);
+const clean = () => del(["build/", ".publish"]);
 
 const img = () =>
     gulp
@@ -63,7 +63,7 @@ const styles = () =>
         )
         .pipe(miniCSS());
 
-
+// bro (browserify) > babelify + presetenv 로 변환 >
 const js = () =>
     gulp
         .src(routes.js.src)
@@ -88,12 +88,16 @@ const watch = () => {
     gulp.watch(routes.scss.watch, styles);
     gulp.watch(routes.js.watch, js);
 };
+// live  /* pipe  */ 
+const gh = () => gulp.src("build/**/*").pipe(ghPages());
+
 
 // serise는 함수와 함수를 직렬로 묶어준다. /* Series  */ 
 const prepare = gulp.series([clean, img]);
 
 const assets = gulp.series([pug, styles, js]);
-
 const live = gulp.parallel([webserver, watch]); // 동시 실행
 
-export const dev = gulp.series([prepare, assets, live]);
+export const build = gulp.series([prepare, assets]);
+export const dev = gulp.series([build, live]);
+export const deploy = gulp.series([build, gh, clean]);
